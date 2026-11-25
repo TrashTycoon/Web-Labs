@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дуель кубиків</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #151b29;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .game {
+            width: 100%;
+            max-width: 650px;
+            background: #222b3c;
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+        }
+
+        .description {
+            color: #b5bfd1;
+        }
+
+        .players {
+            display: flex;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .player {
+            flex: 1;
+            min-width: 0;
+            background: #303b50;
+            border-radius: 12px;
+            padding: 18px 10px;
+            border-top: 4px solid #60a5fa;
+        }
+
+        .computer {
+            border-top-color: #f87171;
+        }
+
+        h2 {
+            font-size: 20px;
+            overflow-wrap: anywhere;
+            margin: 0 0 12px;
+        }
+
+        .score {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .dice {
+            width: 100px;
+            height: 100px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #60a5fa;
+            border-radius: 16px;
+            font-size: 48px;
+            font-weight: bold;
+            color: #151b29;
+        }
+
+        .computer .dice {
+            background: #f87171;
+        }
+
+        button {
+            padding: 12px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background: #60a5fa;
+            color: #151b29;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #restart {
+            background: #475569;
+            color: white;
+        }
+
+        #result {
+            min-height: 44px;
+            font-size: 19px;
+            overflow-wrap: anywhere;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 480px) {
+            .game {
+                padding: 16px;
+            }
+
+            .players {
+                gap: 8px;
+            }
+
+            .dice {
+                width: 70px;
+                height: 70px;
+                font-size: 36px;
+            }
+
+            h2 {
+                font-size: 16px;
+            }
+
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="game">
+        <h1>Дуель кубиків</h1>
+        <p class="description">Хто першим набере три бали?</p>
+
+        <div class="players">
+            <div class="player">
+                <h2 id="playerName">Гравець</h2>
+                <div class="score" id="playerScore">0</div>
+                <div class="dice" id="playerDice">?</div>
+            </div>
+
+            <div class="player computer">
+                <h2>Комп'ютер</h2>
+                <div class="score" id="computerScore">0</div>
+                <div class="dice" id="computerDice">?</div>
+            </div>
+        </div>
+
+        <button id="generate">Кинути кубики</button>
+        <button id="restart">Нова гра</button>
+        <p id="result" aria-live="polite">Натисніть кнопку, щоб почати гру.</p>
+    </main>
+
+    <script>
+        let playerName = prompt("Введіть ваше ім'я:");
+
+        while (playerName !== null &&
+               (playerName.trim() === "" || playerName.trim().length > 24)) {
+            alert("Введіть ім'я від 1 до 24 символів.");
+            playerName = prompt("Введіть ваше ім'я:");
+        }
+
+        if (playerName === null) {
+            playerName = "Гравець";
+        } else {
+            playerName = playerName.trim();
+        }
+
+        document.getElementById("playerName").textContent = playerName;
+
+        const playerDice = document.getElementById("playerDice");
+        const computerDice = document.getElementById("computerDice");
+        const playerScore = document.getElementById("playerScore");
+        const computerScore = document.getElementById("computerScore");
+        const generateButton = document.getElementById("generate");
+        const restartButton = document.getElementById("restart");
+        const result = document.getElementById("result");
+
+        let playerPoints = 0;
+        let computerPoints = 0;
+
+        function generateNumber() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function playRound() {
+            if (playerPoints === 3 || computerPoints === 3) {
+                return;
+            }
+
+            let playerNumber = generateNumber();
+            let computerNumber = generateNumber();
+
+            playerDice.textContent = playerNumber;
+            computerDice.textContent = computerNumber;
+
+            if (playerNumber > computerNumber) {
+                playerPoints++;
+                result.textContent = "Ви виграли раунд!";
+            } else if (playerNumber < computerNumber) {
+                computerPoints++;
+                result.textContent = "Комп'ютер виграв раунд!";
+            } else {
+                result.textContent = "Нічия!";
+            }
+
+            playerScore.textContent = playerPoints;
+            computerScore.textContent = computerPoints;
+
+            if (playerPoints === 3) {
+                result.textContent = playerName + ", ви перемогли!";
+                generateButton.disabled = true;
+            } else if (computerPoints === 3) {
+                result.textContent = "Комп'ютер переміг!";
+                generateButton.disabled = true;
+            }
+        }
+
+        function restartGame() {
+            playerPoints = 0;
+            computerPoints = 0;
+            playerScore.textContent = 0;
+            computerScore.textContent = 0;
+            playerDice.textContent = "?";
+            computerDice.textContent = "?";
+            result.textContent = "Натисніть кнопку, щоб почати гру.";
+            generateButton.disabled = false;
+        }
+
+        generateButton.addEventListener("click", playRound);
+        restartButton.addEventListener("click", restartGame);
+    </script>
+</body>
+</html>
