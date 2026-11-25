@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторна робота №7 - Монетка</title>
+</head>
+<body></body>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const style = document.createElement("style");
+    style.textContent = `
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 28px 22px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #cbd5e1;
+            margin-bottom: 22px;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            outline: none;
+            border-radius: 14px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            min-height: 22px;
+            color: #fca5a5;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .coin-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 18px 0 20px;
+            perspective: 1000px;
+        }
+
+        .coin {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fde68a, #f59e0b 60%, #b45309 100%);
+            border: 6px solid #fcd34d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: #4b2e05;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.5);
+            transition: transform 1s ease;
+            user-select: none;
+        }
+
+        .coin.flipping {
+            transform: rotateY(1440deg) scale(1.05);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .main-btn {
+            background: #f59e0b;
+            color: #1e1b16;
+        }
+
+        .main-btn:hover {
+            background: #fbbf24;
+        }
+
+        .secondary-btn {
+            background: #334155;
+            color: white;
+        }
+
+        .secondary-btn:hover {
+            background: #475569;
+        }
+
+        .result-box {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 16px;
+            min-height: 90px;
+        }
+
+        .result-title {
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .result-text {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .result-extra {
+            color: #e2e8f0;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 600px) {
+            .title {
+                font-size: 24px;
+            }
+
+            .coin {
+                width: 140px;
+                height: 140px;
+                font-size: 24px;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    const app = document.createElement("div");
+    app.className = "app";
+
+    const title = document.createElement("h1");
+    title.className = "title";
+    title.textContent = "Монетка рішень";
+
+    const subtitle = document.createElement("p");
+    subtitle.className = "subtitle";
+    subtitle.textContent = "Введіть запитання та підкиньте монетку";
+
+    const input = document.createElement("input");
+    input.className = "question-input";
+    input.type = "text";
+    input.placeholder = "Наприклад: Чи пощастить мені завтра?";
+
+    const error = document.createElement("div");
+    error.className = "error";
+
+    const coinWrapper = document.createElement("div");
+    coinWrapper.className = "coin-wrapper";
+
+    const coin = document.createElement("div");
+    coin.className = "coin";
+    coin.textContent = "?";
+
+    coinWrapper.appendChild(coin);
+
+    const buttons = document.createElement("div");
+    buttons.className = "buttons";
+
+    const tossButton = document.createElement("button");
+    tossButton.className = "main-btn";
+    tossButton.textContent = "Підкинути монетку";
+
+    const clearButton = document.createElement("button");
+    clearButton.className = "secondary-btn";
+    clearButton.textContent = "Очистити";
+
+    buttons.appendChild(tossButton);
+    buttons.appendChild(clearButton);
+
+    const resultBox = document.createElement("div");
+    resultBox.className = "result-box";
+
+    const resultTitle = document.createElement("div");
+    resultTitle.className = "result-title";
+    resultTitle.textContent = "Результат";
+
+    const resultText = document.createElement("div");
+    resultText.className = "result-text";
+    resultText.textContent = "Очікується підкидання...";
+
+    const resultExtra = document.createElement("div");
+    resultExtra.className = "result-extra";
+    resultExtra.textContent = "Монетка покаже відповідь після натискання кнопки.";
+
+    resultBox.appendChild(resultTitle);
+    resultBox.appendChild(resultText);
+    resultBox.appendChild(resultExtra);
+
+    app.appendChild(title);
+    app.appendChild(subtitle);
+    app.appendChild(input);
+    app.appendChild(error);
+    app.appendChild(coinWrapper);
+    app.appendChild(buttons);
+    app.appendChild(resultBox);
+
+    document.body.appendChild(app);
+
+    const answers = [
+        { side: "Орел", decision: "Так" },
+        { side: "Решка", decision: "Ні" }
+    ];
+
+    function validateInput() {
+        const value = input.value.trim();
+
+        if (value === "") {
+            error.textContent = "Будь ласка, введіть запитання.";
+            return false;
+        }
+
+        if (value.length < 3) {
+            error.textContent = "Запитання занадто коротке.";
+            return false;
+        }
+
+        error.textContent = "";
+        return true;
+    }
+
+    function tossCoin() {
+        if (!validateInput()) {
+            resultText.textContent = "Помилка";
+            resultExtra.textContent = "Спочатку введіть коректне запитання.";
+            return;
+        }
+
+        coin.classList.remove("flipping");
+        void coin.offsetWidth;
+        coin.classList.add("flipping");
+
+        resultText.textContent = "Монетка обертається...";
+        resultExtra.textContent = "Зачекайте кілька секунд.";
+
+        setTimeout(function () {
+            const randomIndex = Math.floor(Math.random() * answers.length);
+            const result = answers[randomIndex];
+
+            coin.textContent = result.side;
+            resultText.textContent = result.decision;
+            resultExtra.textContent = "Випало: " + result.side + ". Відповідь на запитання: \"" + input.value.trim() + "\"";
+        }, 1000);
+    }
+
+    function clearAll() {
+        input.value = "";
+        error.textContent = "";
+        coin.textContent = "?";
+        coin.classList.remove("flipping");
+        resultText.textContent = "Очікується підкидання...";
+        resultExtra.textContent = "Монетка покаже відповідь після натискання кнопки.";
+        input.focus();
+    }
+
+    tossButton.addEventListener("click", tossCoin);
+    clearButton.addEventListener("click", clearAll);
+
+    input.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            tossCoin();
+        }
+    });
+});
+</script>
+</html>
